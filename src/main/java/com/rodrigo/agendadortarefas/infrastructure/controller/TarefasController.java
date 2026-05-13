@@ -3,6 +3,10 @@ package com.rodrigo.agendadortarefas.infrastructure.controller;
 
 import com.rodrigo.agendadortarefas.infrastructure.business.DTO.TarefasDTO;
 import com.rodrigo.agendadortarefas.infrastructure.business.TarefaService;
+import com.rodrigo.agendadortarefas.infrastructure.entity.TarefasEntity;
+import com.rodrigo.agendadortarefas.infrastructure.enums.StatusNotificacaoEnum;
+import com.rodrigo.agendadortarefas.infrastructure.exceptions.ResourceNotFoundException;
+import com.rodrigo.agendadortarefas.infrastructure.repository.TarefasRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import java.util.List;
 public class TarefasController {
 
     private final TarefaService tarefasService;
+    private final TarefasRepository tarefasRepository;
 
     @PostMapping
     public ResponseEntity <TarefasDTO> gravarTarefas(@RequestBody TarefasDTO dto,
@@ -37,6 +42,29 @@ public class TarefasController {
         List<TarefasDTO> tarefas = tarefasService.buscaTarefasPorEmail(token);
 
         return ResponseEntity.ok(tarefas);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deletaTarefaPorId(@RequestParam("id")String id){
+        try{
+            tarefasService.deletaTarefaPorId(id);
+        }catch (ResourceNotFoundException e){
+            throw new ResourceNotFoundException("Erroao deletar tarefa por id, id inexistente" + id,
+            e.getCause());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping
+    public ResponseEntity<TarefasDTO> alteraStatusNotificacao (@RequestParam("status")StatusNotificacaoEnum status,
+                                                               @RequestParam("id") String id){
+        return ResponseEntity.ok(tarefasService.alteraStatus(status,id));
+    }
+
+    @PutMapping
+    public ResponseEntity<TarefasDTO> updateTarefas(@RequestBody TarefasDTO dto,@RequestParam("id")String id){
+
+        return ResponseEntity.ok(tarefasService.updateTarefas(dto, id));
     }
 
 }
